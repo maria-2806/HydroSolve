@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Onboarding from './components/Onboarding';
 import Auth from './components/Auth';
 import UserHome from './components/UserHome';
-import AdminHome from './components/Adminhome';
+import AdminHome from './components/AdminHome';
 import ReportIssueForm from './components/ReportIssueForm';
 import GoogleMap from './components/GoogleMap';
 
