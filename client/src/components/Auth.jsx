@@ -23,7 +23,7 @@ const Auth = () => {
     const endpoint = isSignUp ? '/signup' : '/login';
 
     try {
-      const response = await axios.post(`http://localhost:5000${endpoint}`, {
+      const response = await axios.post(`https://hydrosolve.onrender.com${endpoint}`, {
         name: isSignUp ? name : undefined,
         email,
         password,
