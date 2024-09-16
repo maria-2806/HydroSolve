@@ -45,7 +45,7 @@ const ReportIssueForm = () => {
 
     try {
       // Send POST request to the server with form data
-      const response = await fetch('https://hydrosolve.onrender.com/user/report', {
+      const response = await fetch('http://localhost:5000/user/report', {
         method: 'POST',
         body: formData, // Use formData to send multipart/form-data
       });

@@ -106,6 +106,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
+
 app.post('/user/report',upload.single('image'),  async (req, res) => {
   const { name,subject, description, severity, contact, date } = req.body;
   const imageUrl = req.file ? req.file.path : null; // Get image URL from Cloudinary
@@ -139,6 +140,18 @@ app.post('/user/report',upload.single('image'),  async (req, res) => {
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
+
+// Fetch all issues (for admin)
+app.get('/admin/issues', async (req, res) => {
+  try {
+    const issues = await Issue.find(); // Fetch all issues from the database
+    res.status(200).json(issues); // Return the issues as JSON
+  } catch (err) {
+    console.error('Error fetching issues:', err);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
 
 // Start the server
 app.listen(PORT, () => {
