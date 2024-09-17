@@ -1,46 +1,43 @@
-// src/models/Issue.js
 const mongoose = require('mongoose');
 
+// Define the Issue schema
 const issueSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Name is required'],
-    trim: true, 
+    required: true,
   },
   subject: {
     type: String,
-    required: [true, 'Subject is required'],
-    trim: true, 
-    maxlength: [30, 'Subject cannot be more than 20 characters']
+    required: true,
   },
   description: {
     type: String,
-    required: [true, 'Description is required'],
-    trim: true,
+    required: true,
   },
   severity: {
     type: Number,
-    required: [true, 'Severity is required'], 
-    min: [1, 'Severity must be at least 1'], 
-    max: [10, 'Severity cannot exceed 10'], 
+    required: true,
+    min: 0,
+    max: 10,
   },
   contact: {
     type: String,
-    required: [true, 'Contact information is required'],
-    trim: true, 
+    required: true,
   },
   date: {
     type: Date,
+    required: true,
   },
   cloudinary_id: {
     type: String,
-    
+    default: null, // Store image reference (if applicable)
   },
-
-
+  location: {
+    type: String, // Add a new field to store the location as a string
+    required: true,
+  },
 });
 
+// Create and export the Issue model
 const Issue = mongoose.model('Issue', issueSchema);
-
-
 module.exports = Issue;

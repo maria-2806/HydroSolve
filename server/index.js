@@ -11,7 +11,6 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-
 app.use(express.json());
 app.use(cors());
 
@@ -22,22 +21,22 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-  
-  // Multer configuration for Cloudinary
-  const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'issue_images', // Folder in Cloudinary to store images
-      allowed_formats: ['jpg', 'png', 'jpeg'], // Allowed image formats
-    },
-  });
-  
-  const upload = multer({ storage });
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Multer configuration for Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'issue_images', // Folder in Cloudinary to store images
+    allowed_formats: ['jpg', 'png', 'jpeg'], // Allowed image formats
+  },
+});
+
+const upload = multer({ storage });
 
 // Sign-up route
 app.post('/signup', async (req, res) => {
@@ -65,8 +64,8 @@ app.post('/signup', async (req, res) => {
     // Generate a JWT token
     const token = jwt.sign({ userId: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Respond with the token
-    res.status(201).json({ token });
+    // Respond with the token and name
+    res.status(201).json({ token, name: newUser.name });
   } catch (err) {
     console.error('Error during sign-up:', err); // Log the error details
     res.status(500).json({ message: 'Server error. Please try again later.' });
@@ -98,25 +97,24 @@ app.post('/login', async (req, res) => {
     // Generate a JWT token
     const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Respond with the token
-    res.status(200).json({ token });
+    // Respond with the token and name
+    res.status(200).json({ token, name: user.name });
   } catch (err) {
     console.error('Error during login:', err); // Log the error details
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
 
-
-app.post('/user/report',upload.single('image'),  async (req, res) => {
-  const { name,subject, description, severity, contact, date } = req.body;
+// Report an issue route
+app.post('/user/report', upload.single('image'), async (req, res) => {
+  const { name, subject, description, severity, contact, date, location } = req.body;
   const imageUrl = req.file ? req.file.path : null; // Get image URL from Cloudinary
 
   // Validate input
-  if (!name || !subject || !description || !severity || !contact ) {
-    return res.status(400).json({ message: 'All fields are required: name, subject, description, severity, contact.' });
+  if (!name || !subject || !description || !severity || !contact || !location) {
+    return res.status(400).json({ message: 'All fields are required: name, subject, description, severity, contact, location.' });
   }
-  console.log('Received issue data:', { name, subject, description, severity, contact, date , imageUrl });
-
+  console.log('Received issue data:', { name, subject, description, severity, contact, date, location, imageUrl });
 
   try {
     // Create a new issue
@@ -127,6 +125,7 @@ app.post('/user/report',upload.single('image'),  async (req, res) => {
       severity,
       contact,
       date,
+      location, // Store the location
       cloudinary_id: imageUrl,
     });
 
@@ -151,7 +150,6 @@ app.get('/admin/issues', async (req, res) => {
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
-
 
 // Start the server
 app.listen(PORT, () => {
