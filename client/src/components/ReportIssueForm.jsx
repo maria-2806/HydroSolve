@@ -5,6 +5,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LoadScript, Autocomplete } from '@react-google-maps/api';
 import dayjs from 'dayjs';
+// import {UserNavbar} from './UserNavbar';
 
 import {
   TextField,
@@ -25,6 +26,7 @@ import {
   CalendarToday,
   Image as ImageIcon,
 } from '@mui/icons-material';
+import UserNavbar from './UserNavbar';
 
 const libraries = ['places'];
 
@@ -108,6 +110,7 @@ export default function ReportIssueForm() {
       libraries={libraries}
       onLoad={() => setIsLoaded(true)}
     >
+      <UserNavbar/>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
           <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 500 }}>

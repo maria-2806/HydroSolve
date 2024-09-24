@@ -4,6 +4,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 function UncontrolledExample() {
   return (
+    <div>
+      <h2 className="text-center my-5">Testimonials</h2>
+    
     <Carousel>
       <Carousel.Item>
         <ExampleCarouselImage />
@@ -50,6 +53,7 @@ function UncontrolledExample() {
         </Carousel.Caption>
       </Carousel.Item>
     </Carousel>
+    </div>
   );
 }
 

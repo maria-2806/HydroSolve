@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { GoogleMap, Marker, LoadScript } from '@react-google-maps/api';
 import axios from 'axios';
-
+import UserNavbar from './UserNavbar';
 // Define map container style
 const containerStyle = {
   width: '100%',
@@ -67,7 +67,10 @@ const GoogleMapComponent = () => {
   }, [issues]);
 
   return (
+    
+
     <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+      <UserNavbar/>
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={mapCenter}
@@ -78,6 +81,7 @@ const GoogleMapComponent = () => {
         ))}
       </GoogleMap>
     </LoadScript>
+        
   );
 };
 
