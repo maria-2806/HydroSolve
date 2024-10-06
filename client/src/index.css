@@ -65,4 +65,20 @@
   }
 }
 
+@layer components {
+  .all-\[unset\] {
+    all: unset;
+  }
+}
+
+:root {
+  --grey: rgba(243, 243, 243, 1);
+  --p-font-family: "Space Grotesk", Helvetica;
+  --p-font-size: 18px;
+  --p-font-style: normal;
+  --p-font-weight: 400;
+  --p-letter-spacing: 0px;
+  --p-line-height: normal;
+}
+
 
