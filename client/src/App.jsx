@@ -6,7 +6,6 @@ import UserHome from "./components/UserHome";
 import AdminHome from "./components/AdminHome";
 import ReportIssueForm from "./components/ReportIssueForm";
 import GoogleMap from "./components/GoogleMap";
-
 function App() {
   return (
     <Router>

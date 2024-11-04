@@ -6,6 +6,7 @@ import GoogleMap from "./GoogleMap";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Slider } from '@mui/material';
 import UncontrolledExample from "./Testimonials";
+import Intro from "./Intro"; 
 
 const UserHome = () => {
     const [userName, setUserName] = useState('');
@@ -20,6 +21,7 @@ const UserHome = () => {
         <div className="wrap">
             <UserNavbar/>
             <h1 className="text-center my-5">Welcome, {userName}!</h1>
+            <Intro/>
             <UncontrolledExample/>
         </div>
     );
