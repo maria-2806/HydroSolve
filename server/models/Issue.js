@@ -36,6 +36,11 @@ const issueSchema = new mongoose.Schema({
     type: String, // Add a new field to store the location as a string
     required: true,
   },
+  status: {
+    type: String,
+    enum: ['resolved', 'unresolved'], 
+    default: 'unresolved', 
+  },
 });
 
 // Create and export the Issue model

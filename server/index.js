@@ -151,6 +151,37 @@ app.get('/admin/issues', async (req, res) => {
   }
 });
 
+
+// Update the status of an issue
+// app.patch('/admin/issues/:id/status', async (req, res) => {
+//   const { id } = req.params;
+//   const { status } = req.body;
+
+//   // Validate the status
+//   if (!['resolved', 'unresolved'].includes(status)) {
+//     return res.status(400).json({ message: 'Invalid status value.' });
+//   }
+
+//   try {
+//     // Update the issue status
+//     const updatedIssue = await Issue.findByIdAndUpdate(
+//       id,
+//       { status },
+//       { new: true } // Return the updated issue
+//     );
+
+//     if (!updatedIssue) {
+//       return res.status(404).json({ message: 'Issue not found.' });
+//     }
+
+//     res.status(200).json(updatedIssue); // Send back the updated issue
+//   } catch (err) {
+//     console.error('Error updating issue status:', err);
+//     res.status(500).json({ message: 'Server error. Please try again later.' });
+//   }
+// });
+
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

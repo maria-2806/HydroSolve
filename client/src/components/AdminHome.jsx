@@ -12,27 +12,39 @@ export default function AdminHome() {
   const [error, setError] = useState('')
   const [adminName, setAdminName] = useState('')
 
-  useEffect(() => {
-    const fetchIssues = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/admin/issues')
-        setIssues(response.data)
-        setLoading(false)
-      } catch (err) {
-        console.error('Error fetching issues:', err)
-        setError('Failed to load issues. Please try again later.')
-        setLoading(false)
-      }
+  const fetchIssues = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/admin/issues')
+      const updatedIssues = response.data.map(issue => ({
+        ...issue,
+        resolved: false
+      }))
+      setIssues(updatedIssues)
+      setLoading(false)
+    } catch (err) {
+      console.error('Error fetching issues:', err)
+      setError('Failed to load issues. Please try again later.')
+      setLoading(false)
     }
+  }
 
-    const fetchAdminName = () => {
-      const name = localStorage.getItem('name')
-      setAdminName(name || 'Admin')
-    }
-  
+  const fetchAdminName = () => {
+    const name = localStorage.getItem('name')
+    setAdminName(name || 'Admin')
+  }
+
+  useEffect(() => {
     fetchAdminName()
     fetchIssues()
   }, [])
+
+  const toggleResolved = (issueId) => {
+    setIssues(prevIssues =>
+      prevIssues.map(issue =>
+        issue._id === issueId ? { ...issue, resolved: !issue.resolved } : issue
+      )
+    )
+  }
 
   const getSeverityColor = (severity) => {
     if (typeof severity !== 'number' || severity < 1 || severity > 10) {
@@ -52,6 +64,9 @@ export default function AdminHome() {
     return 'High'
   }
 
+  const resolvedCount = issues.filter(issue => issue.resolved).length
+  const unresolvedCount = issues.length - resolvedCount
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <Card className="mb-8">
@@ -63,6 +78,10 @@ export default function AdminHome() {
         </CardHeader>
         <CardContent>
           <h2 className="text-xl font-semibold mb-4">Water Issue Reports Dashboard</h2>
+          <div className="flex space-x-4">
+            <Badge className="bg-green-500 text-white">Resolved: {resolvedCount}</Badge>
+            <Badge className="bg-red-500 text-white">Unresolved: {unresolvedCount}</Badge>
+          </div>
         </CardContent>
       </Card>
 
@@ -92,22 +111,32 @@ export default function AdminHome() {
               <Card key={issue._id} className="mb-6">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <h3 className="text-2xl font-bold">{issue.subject}</h3>
+                    <div className="space-y-2 w-full">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={issue.resolved}
+                          onChange={() => toggleResolved(issue._id)}
+                          className="mr-2"
+                        />
+                        <h3 className={`text-2xl font-bold ${issue.resolved ? 'line-through text-gray-400' : ''}`}>
+                          {issue.subject}
+                        </h3>
+                      </div>
                       <Badge className={`${getSeverityColor(issue.severity)} text-white`}>
                         {getSeverityLabel(issue.severity)} ({issue.severity})
                       </Badge>
                       <p className="text-sm text-gray-500">Reported by: {issue.name}</p>
                       <p className="text-sm text-gray-500">Date: {new Date(issue.date).toLocaleString()}</p>
                       <p className="text-sm text-gray-500">Location: {issue.location}</p>
-                      <p className="mt-4">{issue.description}</p>
+                      <p className={`mt-4 ${issue.resolved ? 'line-through text-gray-400' : ''}`}>{issue.description}</p>
                       <p className="text-sm text-gray-500">Contact: {issue.contact}</p>
                     </div>
                     {issue.cloudinary_id && (
                       <img 
                         src={issue.cloudinary_id} 
                         alt="Issue" 
-                        className="w-40 h-40 object-cover rounded-lg shadow-md" 
+                        className={`w-40 h-40 object-cover rounded-lg shadow-md ${issue.resolved ? 'opacity-50' : ''}`} 
                       />
                     )}
                   </div>
@@ -125,4 +154,4 @@ export default function AdminHome() {
       )}
     </div>
   )
-} 
+}
