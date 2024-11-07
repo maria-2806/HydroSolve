@@ -4,13 +4,13 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-const User = require('./models/User');
-const Issue = require('./models/Issue');
-const app = express();
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const User = require('./models/User');
+const Issue = require('./models/Issue');
 
+const app = express();
 app.use(express.json());
 app.use(cors());
 
@@ -21,6 +21,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Cloudinary configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -31,8 +32,8 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'issue_images', // Folder in Cloudinary to store images
-    allowed_formats: ['jpg', 'png', 'jpeg'], // Allowed image formats
+    folder: 'issue_images',
+    allowed_formats: ['jpg', 'png', 'jpeg'],
   },
 });
 
@@ -42,32 +43,25 @@ const upload = multer({ storage });
 app.post('/signup', async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  // Validate input
   if (!name || !email || !password) {
     return res.status(400).json({ message: 'Please provide name, email, and password.' });
   }
 
   try {
-    // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists.' });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user with the specified role
     const newUser = new User({ name, email, password: hashedPassword, role });
     await newUser.save();
 
-    // Generate a JWT token
     const token = jwt.sign({ userId: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Respond with the token and name
     res.status(201).json({ token, name: newUser.name });
   } catch (err) {
-    console.error('Error during sign-up:', err); // Log the error details
+    console.error('Error during sign-up:', err);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
@@ -76,31 +70,26 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate input
   if (!email || !password) {
     return res.status(400).json({ message: 'Please provide both email and password.' });
   }
 
   try {
-    // Check if the user exists
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials.' });
     }
 
-    // Compare the provided password with the stored hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials.' });
     }
 
-    // Generate a JWT token
     const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Respond with the token and name
     res.status(200).json({ token, name: user.name });
   } catch (err) {
-    console.error('Error during login:', err); // Log the error details
+    console.error('Error during login:', err);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
@@ -108,16 +97,13 @@ app.post('/login', async (req, res) => {
 // Report an issue route
 app.post('/user/report', upload.single('image'), async (req, res) => {
   const { name, subject, description, severity, contact, date, location } = req.body;
-  const imageUrl = req.file ? req.file.path : null; // Get image URL from Cloudinary
+  const imageUrl = req.file ? req.file.path : null;
 
-  // Validate input
   if (!name || !subject || !description || !severity || !contact || !location) {
     return res.status(400).json({ message: 'All fields are required: name, subject, description, severity, contact, location.' });
   }
-  console.log('Received issue data:', { name, subject, description, severity, contact, date, location, imageUrl });
 
   try {
-    // Create a new issue
     const newIssue = new Issue({
       name,
       subject,
@@ -125,14 +111,12 @@ app.post('/user/report', upload.single('image'), async (req, res) => {
       severity,
       contact,
       date,
-      location, // Store the location
+      location,
       cloudinary_id: imageUrl,
+      status: 'unresolved', // Default status
     });
 
-    // Save the issue to the database
     await newIssue.save();
-
-    // Respond with the created issue
     res.status(201).json(newIssue);
   } catch (err) {
     console.error('Error during issue reporting:', err);
@@ -140,46 +124,87 @@ app.post('/user/report', upload.single('image'), async (req, res) => {
   }
 });
 
+// Fetch reports for the logged-in user
+app.get('/user/reports', async (req, res) => {
+  const { name } = req.query; // Fetch user name from query parameter
+
+  if (!name) {
+    return res.status(400).json({ message: 'Name is required to fetch reports.' });
+  }
+
+  try {
+    const userReports = await Issue.find({ name }); // Filter by name
+
+    // Respond with an empty array if no reports exist
+    if (!userReports || userReports.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    res.status(200).json(userReports);
+  } catch (err) {
+    console.error('Error fetching user reports:', err);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+
+
+
 // Fetch all issues (for admin)
 app.get('/admin/issues', async (req, res) => {
   try {
-    const issues = await Issue.find(); // Fetch all issues from the database
-    res.status(200).json(issues); // Return the issues as JSON
+    const issues = await Issue.find();
+    res.status(200).json(issues);
   } catch (err) {
     console.error('Error fetching issues:', err);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
 
-
 // Update the status of an issue
-// app.patch('/admin/issues/:id/status', async (req, res) => {
-//   const { id } = req.params;
-//   const { status } = req.body;
+app.patch('/admin/issues/:id/status', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
 
-//   // Validate the status
-//   if (!['resolved', 'unresolved'].includes(status)) {
-//     return res.status(400).json({ message: 'Invalid status value.' });
-//   }
+  // Validate the status
+  if (!['resolved', 'unresolved', 'in progress'].includes(status)) {
+    return res.status(400).json({ message: 'Invalid status value. Use "resolved", "unresolved", or "in progress".' });
+  }
 
-//   try {
-//     // Update the issue status
-//     const updatedIssue = await Issue.findByIdAndUpdate(
-//       id,
-//       { status },
-//       { new: true } // Return the updated issue
-//     );
+  try {
+    const updatedIssue = await Issue.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true } // Return the updated issue
+    );
 
-//     if (!updatedIssue) {
-//       return res.status(404).json({ message: 'Issue not found.' });
-//     }
+    if (!updatedIssue) {
+      return res.status(404).json({ message: 'Issue not found.' });
+    }
 
-//     res.status(200).json(updatedIssue); // Send back the updated issue
-//   } catch (err) {
-//     console.error('Error updating issue status:', err);
-//     res.status(500).json({ message: 'Server error. Please try again later.' });
-//   }
-// });
+    res.status(200).json(updatedIssue);
+  } catch (err) {
+    console.error('Error updating issue status:', err);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+app.delete('/admin/issues/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedIssue = await Issue.findByIdAndDelete(id);
+
+    if (!deletedIssue) {
+      return res.status(404).json({ message: 'Issue not found.' });
+    }
+
+    res.status(200).json({ message: 'Issue deleted successfully.', deletedIssue });
+  } catch (err) {
+    console.error('Error deleting issue:', err);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
 
 
 // Start the server

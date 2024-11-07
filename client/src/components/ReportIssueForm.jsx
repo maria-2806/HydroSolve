@@ -1,12 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LoadScript, Autocomplete } from '@react-google-maps/api';
 import dayjs from 'dayjs';
-// import {UserNavbar} from './UserNavbar';
-
 import {
   TextField,
   Slider,
@@ -16,6 +14,7 @@ import {
   Paper,
   Alert,
   InputAdornment,
+  CircularProgress,
 } from '@mui/material';
 import {
   Person,
@@ -23,7 +22,6 @@ import {
   Description,
   Phone,
   LocationOn,
-  CalendarToday,
   Image as ImageIcon,
 } from '@mui/icons-material';
 import UserNavbar from './UserNavbar';
@@ -44,9 +42,16 @@ export default function ReportIssueForm() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
   const autocompleteRef = useRef(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    return () => {
+      autocompleteRef.current = null; // Cleanup Autocomplete instance
+    };
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -76,6 +81,7 @@ export default function ReportIssueForm() {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setIsSubmitting(true); // Start loader
 
     const formDataToSend = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
@@ -94,13 +100,26 @@ export default function ReportIssueForm() {
 
       if (response.ok) {
         setSuccess('Issue reported successfully');
-        navigate('/user/home');
+        setFormData({
+          name: '',
+          subject: '',
+          description: '',
+          severity: 5,
+          contact: '',
+          date: dayjs(),
+          location: '',
+          image: null,
+        });
+        setIsSubmitting(false); // Stop loader
+        navigate('/dashboard');
       } else {
         const errorData = await response.json();
         setError(errorData.message);
+        setIsSubmitting(false); // Stop loader
       }
     } catch (error) {
       setError('An error occurred while reporting the issue. Please try again later.');
+      setIsSubmitting(false); // Stop loader
     }
   };
 
@@ -256,8 +275,9 @@ export default function ReportIssueForm() {
                 color="primary"
                 fullWidth
                 sx={{ mt: 2 }}
+                disabled={isSubmitting} // Disable button during submission
               >
-                Submit
+                {isSubmitting ? <CircularProgress size={24} /> : 'Submit'}
               </Button>
             </form>
             {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}

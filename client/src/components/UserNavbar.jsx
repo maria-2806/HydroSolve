@@ -1,8 +1,5 @@
-// src/components/UserNavbar.jsx
-import React, { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-
-// import { UserContext } from '../context/UserContext'; // Import UserContext
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const UserNavbar = () => {
   const navigate = useNavigate();
@@ -24,6 +21,12 @@ const UserNavbar = () => {
           Report
         </li>
         <li
+          onClick={() => navigate("/dashboard")}
+          className="hover:cursor-pointer hover:text-black"
+        >
+          Dashboard
+        </li>
+        <li
           onClick={() => navigate("/map")}
           className="hover:cursor-pointer hover:text-black"
         >
@@ -32,7 +35,7 @@ const UserNavbar = () => {
       </ul>
       <p
         onClick={() => navigate("/")}
-        className="font-bold hover:cursor-pointer hover:text-black  text-lg"
+        className="font-bold hover:cursor-pointer hover:text-black text-lg"
       >
         <button className="border border-gray-500 px-3 py-1 rounded hover:bg-gray-200">
           Logout

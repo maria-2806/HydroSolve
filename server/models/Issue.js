@@ -33,16 +33,15 @@ const issueSchema = new mongoose.Schema({
     default: null, // Store image reference (if applicable)
   },
   location: {
-    type: String, // Add a new field to store the location as a string
+    type: String,
     required: true,
   },
   status: {
     type: String,
-    enum: ['resolved', 'unresolved'], 
-    default: 'unresolved', 
+    enum: ['resolved', 'unresolved', 'in progress'], // Include "in progress"
+    default: 'unresolved', // Default to "unresolved"
   },
 });
 
-// Create and export the Issue model
 const Issue = mongoose.model('Issue', issueSchema);
 module.exports = Issue;
