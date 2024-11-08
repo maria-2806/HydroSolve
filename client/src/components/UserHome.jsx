@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import './home.css';
 import UserNavbar from "./UserNavbar";
 import ReportIssueForm from "./ReportIssueForm";
+import AboutUs from "./AboutUs";
 import GoogleMap from "./GoogleMap";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Slider } from '@mui/material';
